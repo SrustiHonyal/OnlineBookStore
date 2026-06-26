@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>BookNest - Online Book Store</title>
+    <link rel="stylesheet" href="css/style.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+    <div class="nav-brand">
+        <i class="fas fa-book-open"></i>
+        <span>BookNest</span>
+    </div>
+    <div class="nav-search">
+        <input type="text" id="searchInput" placeholder="Search books, authors..."/>
+        <button onclick="searchBooks()"><i class="fas fa-search"></i></button>
+    </div>
+    <div class="nav-links">
+        <a href="index.html" class="active"><i class="fas fa-home"></i> Home</a>
+        <a href="books.html"><i class="fas fa-books"></i> Books</a>
+        <a href="cart.html"><i class="fas fa-shopping-cart"></i> Cart <span id="cartBadge" class="badge">0</span></a>
+        <div id="authLinks">
+            <a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a>
+            <a href="register.html"><i class="fas fa-user-plus"></i> Register</a>
+        </div>
+        <div id="userLinks" style="display:none">
+            <a href="orders.html"><i class="fas fa-box"></i> My Orders</a>
+            <span id="welcomeUser" class="welcome-text"></span>
+            <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ===== HERO SECTION ===== -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Discover Your Next <br/><span>Favourite Book</span></h1>
+        <p>Thousands of books across every genre. Fast delivery, great prices.</p>
+        <button onclick="window.location='books.html'" class="btn-primary">Browse Books</button>
+    </div>
+    <div class="hero-image">
+        <div class="book-stack">
+            <div class="book b1"></div>
+            <div class="book b2"></div>
+            <div class="book b3"></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== CATEGORIES ===== -->
+<section class="section">
+    <h2 class="section-title">Browse by Category</h2>
+    <div class="categories-grid">
+        <div class="category-card" onclick="filterCategory(1)">
+            <i class="fas fa-feather-alt"></i>
+            <span>Fiction</span>
+        </div>
+        <div class="category-card" onclick="filterCategory(2)">
+            <i class="fas fa-flask"></i>
+            <span>Science & Tech</span>
+        </div>
+        <div class="category-card" onclick="filterCategory(3)">
+            <i class="fas fa-star"></i>
+            <span>Self Help</span>
+        </div>
+        <div class="category-card" onclick="filterCategory(4)">
+            <i class="fas fa-landmark"></i>
+            <span>History</span>
+        </div>
+        <div class="category-card" onclick="filterCategory(5)">
+            <i class="fas fa-child"></i>
+            <span>Children</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FEATURED BOOKS ===== -->
+<section class="section">
+    <h2 class="section-title">Featured Books</h2>
+    <div id="booksGrid" class="books-grid">
+        <p class="loading"><i class="fas fa-spinner fa-spin"></i> Loading books...</p>
+    </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-brand">
+            <i class="fas fa-book-open"></i> BookNest
+            <p>Your trusted online book store since 2024.</p>
+        </div>
+        <div class="footer-links">
+            <h4>Quick Links</h4>
+            <a href="index.html">Home</a>
+            <a href="books.html">Books</a>
+            <a href="cart.html">Cart</a>
+        </div>
+        <div class="footer-contact">
+            <h4>Contact</h4>
+            <p><i class="fas fa-envelope"></i> support@booknest.com</p>
+            <p><i class="fas fa-phone"></i> +91 9876543210</p>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        &copy; 2024 BookNest. All rights reserved.
+    </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        updateNavAuth();
+        loadFeaturedBooks();
+        updateCartBadge();
+    });
+
+    function loadFeaturedBooks() {
+        fetch(API_BASE + '/books')
+            .then(r => r.json())
+            .then(books => {
+                const grid = document.getElementById('booksGrid');
+                grid.innerHTML = '';
+                books.slice(0, 6).forEach(book => {
+                    grid.innerHTML += createBookCard(book);
+                });
+            })
+            .catch(() => {
+                document.getElementById('booksGrid').innerHTML = '<p class="error">Failed to load books. Make sure the backend server is running.</p>';
+            });
+    }
+
+    function filterCategory(id) {
+        window.location = `books.html?category=${id}`;
+    }
+
+    function searchBooks() {
+        const q = document.getElementById('searchInput').value.trim();
+        if (q) window.location = `books.html?search=${encodeURIComponent(q)}`;
+    }
+</script>
+</body>
+</html>

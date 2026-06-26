@@ -1,0 +1,12 @@
+com\bookstore\model\OrderItem.class
+com\bookstore\controller\OrderServlet.class
+com\bookstore\dao\UserDAO.class
+com\bookstore\util\CORSFilter.class
+com\bookstore\controller\BookServlet.class
+com\bookstore\controller\UserServlet.class
+com\bookstore\dao\OrderDAO.class
+com\bookstore\util\DBConnection.class
+com\bookstore\model\User.class
+com\bookstore\dao\BookDAO.class
+com\bookstore\model\Book.class
+com\bookstore\model\Order.class

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>All Books - BookNest</title>
+    <link rel="stylesheet" href="css/style.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-brand">
+        <i class="fas fa-book-open"></i><span>BookNest</span>
+    </div>
+    <div class="nav-search">
+        <input type="text" id="searchInput" placeholder="Search books..."/>
+        <button onclick="doSearch()"><i class="fas fa-search"></i></button>
+    </div>
+    <div class="nav-links">
+        <a href="index.html"><i class="fas fa-home"></i> Home</a>
+        <a href="books.html" class="active"><i class="fas fa-books"></i> Books</a>
+        <a href="cart.html"><i class="fas fa-shopping-cart"></i> Cart <span id="cartBadge" class="badge">0</span></a>
+        <div id="authLinks">
+            <a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a>
+            <a href="register.html"><i class="fas fa-user-plus"></i> Register</a>
+        </div>
+        <div id="userLinks" style="display:none">
+            <a href="orders.html"><i class="fas fa-box"></i> My Orders</a>
+            <span id="welcomeUser" class="welcome-text"></span>
+            <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+</nav>
+
+<div class="page-container">
+    <!-- Sidebar Filter -->
+    <aside class="sidebar">
+        <h3><i class="fas fa-filter"></i> Filter</h3>
+        <div class="filter-group">
+            <h4>Category</h4>
+            <label><input type="radio" name="cat" value="0" onchange="filterBooks(0)" checked/> All</label>
+            <label><input type="radio" name="cat" value="1" onchange="filterBooks(1)"/> Fiction</label>
+            <label><input type="radio" name="cat" value="2" onchange="filterBooks(2)"/> Science & Tech</label>
+            <label><input type="radio" name="cat" value="3" onchange="filterBooks(3)"/> Self Help</label>
+            <label><input type="radio" name="cat" value="4" onchange="filterBooks(4)"/> History</label>
+            <label><input type="radio" name="cat" value="5" onchange="filterBooks(5)"/> Children</label>
+        </div>
+        <div class="filter-group">
+            <h4>Sort By</h4>
+            <select id="sortSelect" onchange="sortBooks()">
+                <option value="default">Default</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="title">Title A-Z</option>
+            </select>
+        </div>
+    </aside>
+
+    <!-- Books Grid -->
+    <main class="main-content">
+        <div class="books-header">
+            <h2 id="pageTitle">All Books</h2>
+            <span id="bookCount" class="book-count"></span>
+        </div>
+        <div id="booksGrid" class="books-grid">
+            <p class="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</p>
+        </div>
+    </main>
+</div>
+
+<!-- Book Detail Modal -->
+<div id="bookModal" class="modal" style="display:none">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-bottom">&copy; 2024 BookNest. All rights reserved.</div>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+    let allBooks = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        updateNavAuth();
+        updateCartBadge();
+        const params = new URLSearchParams(window.location.search);
+        const search = params.get('search');
+        const category = params.get('category');
+
+        if (search) {
+            document.getElementById('searchInput').value = search;
+            loadBooks('search', search);
+        } else if (category) {
+            filterBooks(parseInt(category));
+            document.querySelector(`input[name="cat"][value="${category}"]`).checked = true;
+        } else {
+            loadBooks('all');
+        }
+    });
+
+    function loadBooks(type, param) {
+        let url = API_BASE + '/books';
+        if (type === 'search') url += '?search=' + encodeURIComponent(param);
+        else if (type === 'category' && param > 0) url += '?category=' + param;
+
+        fetch(url)
+            .then(r => r.json())
+            .then(books => {
+                allBooks = books;
+                renderBooks(books);
+                document.getElementById('bookCount').textContent = books.length + ' books found';
+                if (type === 'search') document.getElementById('pageTitle').textContent = `Results for "${param}"`;
+            });
+    }
+
+    function renderBooks(books) {
+        const grid = document.getElementById('booksGrid');
+        if (books.length === 0) {
+            grid.innerHTML = '<p class="no-results">No books found.</p>';
+            return;
+        }
+        grid.innerHTML = books.map(b => createBookCard(b)).join('');
+    }
+
+    function filterBooks(catId) {
+        document.getElementById('pageTitle').textContent = catId === 0 ? 'All Books' : getCatName(catId);
+        loadBooks('category', catId);
+    }
+
+    function sortBooks() {
+        const sort = document.getElementById('sortSelect').value;
+        let sorted = [...allBooks];
+        if (sort === 'price-asc') sorted.sort((a,b) => a.price - b.price);
+        else if (sort === 'price-desc') sorted.sort((a,b) => b.price - a.price);
+        else if (sort === 'title') sorted.sort((a,b) => a.title.localeCompare(b.title));
+        renderBooks(sorted);
+    }
+
+    function doSearch() {
+        const q = document.getElementById('searchInput').value.trim();
+        if (q) loadBooks('search', q);
+    }
+
+    function getCatName(id) {
+        const names = {1:'Fiction',2:'Science & Tech',3:'Self Help',4:'History',5:'Children'};
+        return names[id] || 'Books';
+    }
+</script>
+</body>
+</html>
